@@ -41,11 +41,11 @@ Este repositorio incluye `Dockerfile` y `render.yaml`. Crea un Web Service desde
 - `FIREBASE_SERVICE_ACCOUNT_JSON`: contenido completo del JSON de la cuenta de servicio.
 - `FRONTEND_ORIGIN`: dominio final de Vercel, por ejemplo `https://cospace.vercel.app`.
 
-Render entregará una URL similar a `https://cospace-api.onrender.com`. En Vercel crea la variable `BACKEND_URL` con esa URL, sin añadir `/api`.
+Render entregará una URL similar a `https://cospace-api.onrender.com`.
 
 ### Frontend y proxy en Vercel
 
-El archivo `api/[...path].js` funciona como proxy `/api/*` y usa `BACKEND_URL`. Importa el repositorio en Vercel con la raíz del proyecto como Root Directory. El frontend usa `/api` automáticamente cuando se abre fuera de localhost, por lo que el navegador solo verá el dominio de Vercel.
+El archivo `vercel.json` funciona como proxy `/api/*` hacia Render. Importa el repositorio en Vercel con la raíz del proyecto como Root Directory. El frontend usa `/api` automáticamente cuando se abre fuera de localhost, por lo que el navegador solo verá el dominio de Vercel.
 
 La cuenta de servicio nunca debe subirse al repositorio. Si cambia el dominio de Vercel, actualiza `FRONTEND_ORIGIN` en Render.
 
