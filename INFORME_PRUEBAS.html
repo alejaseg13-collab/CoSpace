@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Informe técnico de pruebas unitarias de CoSpace">
+  <title>CoSpace | Informe de pruebas</title>
+  <style>
+    :root { --ink:#17212b; --muted:#637381; --line:#dce5e8; --paper:#ffffff; --wash:#f2f7f6; --teal:#087f78; --teal-dark:#075c59; --lime:#c8e86b; --coral:#ec745d; --shadow:0 18px 50px rgba(27,58,66,.10); }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:linear-gradient(135deg,#edf7f4 0%,#f9fbf5 46%,#eaf0f5 100%); font:16px/1.65 "Segoe UI",Tahoma,sans-serif; }
+    .shell { width:min(1160px,calc(100% - 36px)); margin:0 auto; }
+    .hero { padding:64px 0 42px; }
+    .hero-inner { display:grid; grid-template-columns:1.35fr .65fr; gap:28px; align-items:end; }
+    .eyebrow { color:var(--teal); font-size:.78rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    h1,h2,h3 { margin:0 0 12px; line-height:1.15; letter-spacing:-.02em; }
+    h1 { max-width:760px; font-size:clamp(2.4rem,6vw,5rem); }
+    h2 { font-size:1.65rem; }
+    h3 { font-size:1.05rem; }
+    .lead { max-width:700px; margin:18px 0 0; color:var(--muted); font-size:1.1rem; }
+    .hero-mark { min-height:190px; padding:28px; display:flex; flex-direction:column; justify-content:space-between; background:var(--teal); color:#fff; box-shadow:var(--shadow); border-radius:8px; }
+    .hero-mark strong { font-size:4rem; line-height:1; color:var(--lime); }
+    .hero-mark span { font-weight:700; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+    .pill { padding:7px 12px; border:1px solid rgba(8,127,120,.2); border-radius:999px; color:var(--teal-dark); background:rgba(255,255,255,.62); font-size:.86rem; }
+    main { padding-bottom:70px; }
+    .section { margin-top:28px; padding:32px; background:rgba(255,255,255,.88); border:1px solid rgba(220,229,232,.9); border-radius:8px; box-shadow:var(--shadow); }
+    .section-heading { display:flex; justify-content:space-between; gap:20px; align-items:baseline; margin-bottom:22px; }
+    .section-heading p { margin:0; color:var(--muted); }
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .stat { padding:20px; border-top:4px solid var(--teal); background:var(--wash); }
+    .stat strong { display:block; color:var(--teal-dark); font-size:2rem; line-height:1; }
+    .stat span { display:block; margin-top:8px; color:var(--muted); font-size:.9rem; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; min-width:760px; border-collapse:collapse; }
+    th,td { padding:14px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { color:var(--teal-dark); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; }
+    td:first-child { width:42px; color:var(--muted); font-weight:700; }
+    .ok { display:inline-flex; padding:3px 9px; border-radius:999px; background:#e8f6d8; color:#3f6f22; font-size:.82rem; font-weight:800; }
+    .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+    .card { padding:22px; border:1px solid var(--line); background:#fbfdfc; }
+    .card p { margin:0; color:var(--muted); }
+    pre { overflow:auto; margin:16px 0 0; padding:18px; color:#d8f3eb; background:#13272b; border-radius:6px; font:13px/1.6 Consolas,"Courier New",monospace; }
+    code { color:var(--teal-dark); font-family:Consolas,"Courier New",monospace; }
+    pre code { color:inherit; }
+    .alert { border-left:5px solid var(--coral); background:#fff4ef; }
+    .alert strong { color:#a34432; }
+    ul { margin:10px 0 0; padding-left:22px; }
+    li + li { margin-top:7px; }
+    footer { padding:28px 0 50px; color:var(--muted); text-align:center; font-size:.9rem; }
+    @media (max-width:760px) { .shell { width:min(100% - 24px,600px); } .hero { padding-top:34px; } .hero-inner,.grid { grid-template-columns:1fr; } .hero-mark { min-height:140px; } .section { padding:22px 18px; } .stats { grid-template-columns:repeat(2,1fr); } .section-heading { display:block; } .section-heading p { margin-top:8px; } }
+  </style>
+</head>
+<body>
+  <header class="hero shell">
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">CoSpace / calidad de software</div>
+        <h1>Informe de pruebas unitarias</h1>
+        <p class="lead">Validación de las reglas críticas de autenticación, reservas, pagos y facturación de la plataforma CoSpace.</p>
+        <div class="meta"><span class="pill">10 de septiembre de 2026</span><span class="pill">.NET 8 + xUnit</span><span class="pill">Release</span><span class="pill">Commit 97b550a</span></div>
+      </div>
+      <div class="hero-mark"><strong>11/11</strong><span>pruebas correctas<br>0 errores · 0 omitidas</span></div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="section">
+      <div class="section-heading"><h2>Resultado ejecutivo</h2><p>Suite ejecutada localmente en Windows.</p></div>
+      <div class="stats"><div class="stat"><strong>11</strong><span>Pruebas totales</span></div><div class="stat"><strong>11</strong><span>Pruebas correctas</span></div><div class="stat"><strong>0</strong><span>Errores</span></div><div class="stat"><strong>1,4 s</strong><span>Duración final</span></div></div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><h2>Alcance</h2><p>Pruebas aisladas de infraestructura externa.</p></div>
+      <div class="grid"><article class="card"><h3>Autenticación</h3><p>Registro, normalización de datos, hash de contraseña, login válido, contraseña inválida y correos duplicados.</p></article><article class="card"><h3>Reservas</h3><p>Creación de reserva, IVA del 19 %, horarios inválidos, traslapes activos y reutilización de horarios cancelados.</p></article><article class="card"><h3>Pagos</h3><p>Confirmación, autorización por usuario, asignación de factura y protección contra duplicidad de pagos.</p></article><article class="card"><h3>Aislamiento</h3><p>Se usaron repositorios falsos en memoria. Las pruebas no escriben en Firebase ni dependen de Render, Vercel o internet.</p></article></div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><h2>Casos ejecutados</h2><p>Archivo: <code>tests/CoSpace.Tests/ApplicationServiceTests.cs</code></p></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Prueba</th><th>Validación</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>1</td><td><code>RegisterAsync_creates_normalized_member_with_hashed_password</code></td><td>Normaliza nombre, correo y teléfono; crea miembro y no guarda contraseña plana.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>2</td><td><code>RegisterAsync_rejects_duplicate_email</code></td><td>Rechaza el correo repetido sin importar mayúsculas.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>3</td><td><code>LoginAsync_accepts_correct_password_and_rejects_wrong_password</code></td><td>Acepta credenciales válidas y rechaza una contraseña incorrecta.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>4</td><td><code>RegisterAsync_rejects_short_password</code></td><td>Exige al menos 8 caracteres.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>5</td><td><code>ConfirmAsync_creates_booking_and_pending_payment_with_iva</code></td><td>Crea reserva confirmada, pago pendiente y calcula 100000 × 1.19 = 119000.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>6</td><td><code>ConfirmAsync_rejects_overlapping_active_booking</code></td><td>Rechaza un horario que se cruza con una reserva activa.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>7</td><td><code>ConfirmAsync_allows_overlap_with_cancelled_booking</code></td><td>Permite reservar un horario de una reserva cancelada.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>8</td><td><code>ConfirmAsync_rejects_invalid_time_range</code></td><td>Rechaza cuando la hora final no es posterior a la inicial.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>9</td><td><code>PayAsync_marks_pending_payment_as_paid_and_assigns_invoice</code></td><td>Marca el pago como pagado, asigna método y factura.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>10</td><td><code>PayAsync_rejects_payment_by_different_user</code></td><td>Impide que otro usuario pague una reserva ajena.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>11</td><td><code>PayAsync_returns_existing_paid_payment_without_new_invoice</code></td><td>Evita duplicar pagos o facturas ya confirmados.</td><td><span class="ok">Correcta</span></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><h2>Código y ejecución</h2><p>Comandos reproducibles.</p></div>
+      <h3>Proyecto de pruebas</h3>
+      <pre><code>&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net8.0&lt;/TargetFramework&gt;
+    &lt;IsPackable&gt;false&lt;/IsPackable&gt;
+  &lt;/PropertyGroup&gt;
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" /&gt;
+    &lt;PackageReference Include="xunit" Version="2.9.2" /&gt;
+    &lt;PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</code></pre>
+      <h3 style="margin-top:24px">Prueba representativa</h3>
+      <pre><code>[Fact]
+public async Task ConfirmAsync_creates_booking_and_pending_payment_with_iva()
+{
+    var bookings = new FakeBookingRepository();
+    var payments = new FakePaymentRepository();
+    var service = new BookingService(bookings, payments);
+
+    var result = await service.ConfirmAsync(
+        "user-1", SpaceId, BookingDate,
+        new TimeOnly(9), new TimeOnly(11),
+        100000, MetodoPago.Tarjeta, CancellationToken.None);
+
+    Assert.Equal(119000m, result.Reserva.PrecioTotal);
+    Assert.Equal(EstadoReserva.Confirmada, result.Reserva.Estado);
+    Assert.Equal(EstadoPago.Pendiente, result.Pago.Estado);
+}</code></pre>
+      <h3 style="margin-top:24px">Comandos ejecutados</h3>
+      <pre><code>dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj \
+  --configuration Release --logger "console;verbosity=normal"
+
+dotnet build .\src\CoSpace.Api\CoSpace.Api.csproj \
+  --configuration Release --no-restore</code></pre>
+    </section>
+
+    <section class="section alert">
+      <div class="section-heading"><h2>Fallo encontrado y corrección</h2><p>Primera ejecución de la suite.</p></div>
+      <p><strong>Fallo:</strong> la compilación de pruebas produjo 22 errores <code>CS0246</code> porque los símbolos <code>Fact</code> y <code>Assert</code> no estaban importados.</p>
+      <pre><code>CS0246: El nombre del tipo o del espacio de nombres
+'FactAttribute' no se encontró</code></pre>
+      <p><strong>Corrección:</strong> se agregó el namespace requerido al archivo de pruebas:</p>
+      <pre><code>using Xunit;</code></pre>
+      <p>Se repitió el mismo comando y las 11 pruebas finalizaron correctamente.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><h2>Validaciones adicionales</h2><p>Comprobaciones fuera de la suite unitaria.</p></div>
+      <ul><li>La API .NET completa compiló correctamente en configuración Release.</li><li>El endpoint público <code>https://co-space-nine.vercel.app/api/sedes</code> respondió <strong>HTTP 200</strong>.</li><li>El proxy Vercel → Render → API devolvió las cinco sedes esperadas.</li></ul>
+      <h3 style="margin-top:24px">Límites actuales</h3>
+      <ul><li>No se probaron reglas de seguridad de Firestore.</li><li>No se probó una pasarela de pagos real.</li><li>No se realizaron pruebas de carga ni concurrencia.</li><li>No se ejecutaron pruebas end-to-end de navegador.</li></ul>
+    </section>
+
+    <section class="section"><h2>Conclusión</h2><p>Las reglas principales de autenticación, reservas y pagos están cubiertas por 11 pruebas unitarias. Todas terminaron correctamente después de corregir la importación faltante de xUnit. La API compila y el flujo público de Vercel hacia Render fue validado con una respuesta HTTP 200.</p></section>
+  </main>
+  <footer>CoSpace · Informe técnico de calidad · 2026</footer>
+</body>
+</html>
