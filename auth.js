@@ -15,7 +15,6 @@ const recoveryLink = document.querySelector('#recovery-link');
 const submit = document.querySelector('#auth-submit');
 const switchText = document.querySelector('#auth-switch');
 const errorBox = document.querySelector('#form-error');
-const demoAccounts = document.querySelector('#demo-accounts');
 const sessionUser = JSON.parse(localStorage.getItem('cospace-user') || 'null');
 if (sessionUser && sessionUser.rol) localStorage.setItem('cospace-authenticated', 'true');
 if (mode === 'login') {
@@ -24,18 +23,11 @@ if (mode === 'login') {
   rememberField.hidden = false; recoveryLink.hidden = false; submit.innerHTML = 'Iniciar sesión <span>→</span>';
   switchText.innerHTML = '¿No tienes una cuenta? <a href="auth.html?mode=register">Regístrate</a>';
 } else {
-  demoAccounts.remove();
   title.textContent = 'Crea tu cuenta'; description.textContent = plan ? `Regístrate para comenzar con el plan ${plan}.` : 'Regístrate para reservar espacios y elegir tu plan.';
   rememberField.hidden = true; recoveryLink.hidden = true; submit.innerHTML = 'Registrarme <span>→</span>';
   switchText.innerHTML = '¿Ya tienes una cuenta? <a href="auth.html?mode=login">Inicia sesión</a>';
   loadLocations();
 }
-document.querySelectorAll('[data-demo-email]').forEach(button => button.addEventListener('click', () => {
-  form.elements.correo.value = button.dataset.demoEmail;
-  form.elements.contrasena.value = 'Demo1234!';
-  showError('Cuenta de ejemplo cargada. Pulsa Iniciar sesión.');
-  errorBox.classList.add('demo-notice');
-}));
 async function loadLocations() {
   const select = document.querySelector('#sede-preferida');
   try {
@@ -66,7 +58,7 @@ form.addEventListener('submit', async event => {
   submit.disabled = true; submit.innerHTML = 'Procesando...';
   try {
     const response = await fetch(`${API_URL}/${mode}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-    if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || (response.status === 409 ? 'Este correo ya está registrado.' : 'No pudimos completar la solicitud.')); }
+    if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || (response.status === 401 ? 'Correo o contraseña incorrectos.' : response.status === 409 ? 'Este correo ya está registrado.' : 'No pudimos completar la solicitud.')); }
     const user = await response.json(); completeAuth(user);
   } catch (error) {
     if (error instanceof TypeError) {

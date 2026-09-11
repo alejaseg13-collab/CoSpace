@@ -26,7 +26,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 }));
 var app = builder.Build();
 app.UseCors();
-if (builder.Configuration.GetValue<bool>("SEED_DEMO_USERS"))
+if (builder.Configuration.GetValue("SEED_DEMO_USERS", true))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().SeedAsync(CancellationToken.None);

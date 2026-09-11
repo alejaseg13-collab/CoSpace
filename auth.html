@@ -6,12 +6,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css"><link rel="stylesheet" href="auth.css">
-  <style>
-    .demo-accounts{display:grid;gap:8px;padding:14px;border:1px solid #dbe4ec;border-radius:8px;background:#f7fbfb}
-    .demo-accounts>strong{color:#2e4662;font-size:12px}.demo-accounts>p{margin:0 0 3px;color:#657b92;font-size:11px}
-    .demo-account{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #dbe4ec;border-radius:7px;background:#fff;color:#19385e;text-align:left;cursor:pointer}
-    .demo-account:hover{border-color:#12b9a5;background:#effaf8}.demo-account>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#087f78;background:#daf5f3;font-size:10px;font-weight:800}.demo-account b{font-size:11px}.demo-account small{display:block;color:#657b92;font-size:10px;font-weight:400}.demo-notice{color:#087f78;background:#effaf8}
-  </style>
 </head>
 <body>
   <main class="auth-layout">
@@ -34,12 +28,6 @@
         <p class="form-error" id="form-error" role="alert"></p>
         <button class="button" id="auth-submit" type="submit">Iniciar sesión <span>→</span></button>
         <p class="auth-switch" id="auth-switch">¿No tienes una cuenta? <a href="auth.html?mode=register">Regístrate</a></p>
-        <section class="demo-accounts" id="demo-accounts" aria-label="Usuarios de ejemplo">
-          <strong>Usuarios de ejemplo</strong>
-          <p>Selecciona una cuenta para cargar sus datos de prueba.</p>
-          <button type="button" class="demo-account" data-demo-email="sebastian.gil@example.com"><span>SG</span><b>Sebastián Gil<small>Miembro · Plan Pro</small></b></button>
-          <button type="button" class="demo-account" data-demo-email="admin@cospace.co"><span>LG</span><b>Laura Gómez<small>Administradora</small></b></button>
-        </section>
         <div class="auth-divider">o continúa con</div><button class="google-button" id="google-button" type="button">🌈 &nbsp; Continuar con Google</button>
       </form>
     </section>
