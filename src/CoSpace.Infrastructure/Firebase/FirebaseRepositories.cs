@@ -33,7 +33,7 @@ public sealed class FirebaseBookingRepository(FirestoreContext context) : IBooki
     {
         ["usuarioId"] = item.UsuarioId, ["espacioId"] = item.EspacioId, ["fecha"] = item.Fecha.ToString("yyyy-MM-dd"),
         ["horaInicio"] = item.HoraInicio.ToString("HH:mm"), ["horaFin"] = item.HoraFin.ToString("HH:mm"), ["estado"] = (int)item.Estado,
-        ["precioTotal"] = item.PrecioTotal, ["creadoEn"] = Timestamp.FromDateTime(item.CreadoEn.ToUniversalTime())
+        ["precioTotal"] = (double)item.PrecioTotal, ["creadoEn"] = Timestamp.FromDateTime(item.CreadoEn.ToUniversalTime())
     };
 
     private static Reserva FromDocument(DocumentSnapshot document)
@@ -73,7 +73,7 @@ public sealed class FirebasePaymentRepository(FirestoreContext context) : IPayme
 
     private static Dictionary<string, object?> ToDocument(Pago item) => new()
     {
-        ["reservaId"] = item.ReservaId, ["numeroFactura"] = item.NumeroFactura, ["monto"] = item.Monto,
+        ["reservaId"] = item.ReservaId, ["numeroFactura"] = item.NumeroFactura, ["monto"] = (double)item.Monto,
         ["metodo"] = (int)item.Metodo, ["estado"] = (int)item.Estado, ["fecha"] = Timestamp.FromDateTime(item.Fecha.ToUniversalTime())
     };
 

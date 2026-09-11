@@ -77,13 +77,13 @@ public sealed class DemoDataSeeder(FirestoreContext context, IUserRepository use
 
     private static Dictionary<string, object?> ToDocument(Plan item) => new()
     {
-        ["nombre"] = item.Nombre, ["precioMes"] = item.PrecioMes, ["beneficios"] = item.Beneficios.ToArray()
+        ["nombre"] = item.Nombre, ["precioMes"] = (double)item.PrecioMes, ["beneficios"] = item.Beneficios.ToArray()
     };
 
     private static Dictionary<string, object?> ToDocument(Espacio item) => new()
     {
         ["nombre"] = item.Nombre, ["tipo"] = (int)item.Tipo, ["capacidad"] = item.Capacidad, ["sedeId"] = item.SedeId,
-        ["ubicacion"] = item.Ubicacion, ["precioHora"] = item.PrecioHora, ["precioDia"] = item.PrecioDia,
+        ["ubicacion"] = item.Ubicacion, ["precioHora"] = (double)item.PrecioHora, ["precioDia"] = item.PrecioDia is null ? null : (double?)item.PrecioDia.Value,
         ["estado"] = (int)item.Estado, ["foto"] = item.Foto
     };
 
@@ -91,12 +91,12 @@ public sealed class DemoDataSeeder(FirestoreContext context, IUserRepository use
     {
         ["usuarioId"] = item.UsuarioId, ["espacioId"] = item.EspacioId, ["fecha"] = item.Fecha.ToString("yyyy-MM-dd"),
         ["horaInicio"] = item.HoraInicio.ToString("HH:mm"), ["horaFin"] = item.HoraFin.ToString("HH:mm"), ["estado"] = (int)item.Estado,
-        ["precioTotal"] = item.PrecioTotal, ["creadoEn"] = Timestamp.FromDateTime(item.CreadoEn.ToUniversalTime())
+        ["precioTotal"] = (double)item.PrecioTotal, ["creadoEn"] = Timestamp.FromDateTime(item.CreadoEn.ToUniversalTime())
     };
 
     private static Dictionary<string, object?> ToDocument(Pago item) => new()
     {
-        ["reservaId"] = item.ReservaId, ["numeroFactura"] = item.NumeroFactura, ["monto"] = item.Monto,
+        ["reservaId"] = item.ReservaId, ["numeroFactura"] = item.NumeroFactura, ["monto"] = (double)item.Monto,
         ["metodo"] = (int)item.Metodo, ["estado"] = (int)item.Estado, ["fecha"] = Timestamp.FromDateTime(item.Fecha.ToUniversalTime())
     };
 }
