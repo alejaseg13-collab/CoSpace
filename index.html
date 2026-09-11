@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoSpace | Reserva tu espacio de trabajo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="#inicio" aria-label="CoSpace inicio"><span class="logo-mark">C</span><span>Co<span>Space</span></span></a>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">
+      <a class="active" href="#inicio">Inicio</a><a href="#espacios">Espacios</a><a href="nosotros.html">Nuestras Sedes</a><a href="#planes">Planes</a><a href="#contacto">Contacto</a>
+    </nav>
+    <div class="header-actions"><a class="login-link" href="auth.html?mode=login">Iniciar sesión</a><a class="button button-small" href="auth.html?mode=register">Regístrate</a></div>
+  </header>
+
+  <main>
+    <section class="hero section-shell" id="inicio">
+      <div class="hero-copy"><span class="eyebrow-pill">Tu espacio, a un clic</span><h1>Reserva tu espacio<br>de trabajo en segundos</h1><p>Encuentra y reserva el espacio ideal en nuestros coworkings, con disponibilidad en tiempo real y pagos seguros.</p><a class="button hero-button" href="reservas.html">Ver espacios disponibles <span>→</span></a><div class="trust-row"><span><b>ϟ</b> Reserva en<br>segundos</span><span><b>♢</b> Pagos seguros<br>y confiables</span><span><b>◷</b> Disponibilidad<br>en tiempo real</span></div></div>
+      <div class="hero-art"><div class="art-block art-block-teal"></div><div class="art-block art-block-blue"></div><div class="hero-image"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1000&q=85" alt="Interior de un coworking CoSpace"><span>Better<br>Ideas<br>Together</span></div></div>
+    </section>
+
+    <section class="spaces-section section-band" id="espacios"><div class="section-shell"><span class="eyebrow-pill">Nuestros espacios</span><h2>Encuentra el espacio perfecto para ti</h2><p class="section-intro">Elige entre diferentes opciones según tus necesidades y disfruta de un entorno productivo, flexible y profesional.</p><div class="category-grid" id="category-grid"></div></div></section>
+    <section class="locations-section section-shell" id="sedes"><span class="eyebrow-pill">Siempre cerca de ti</span><h2>Nuestras 5 sedes</h2><p class="section-intro">Trabaja donde te quede mejor, con la misma calidad CoSpace en toda Bogotá.</p><div class="location-grid" id="location-grid"></div></section>
+    <section class="plans-section section-band" id="planes"><div class="section-shell"><span class="eyebrow-pill">Planes de membresía</span><h2>Elige el plan que se adapta a ti</h2><p class="section-intro">Planes flexibles para freelancers, equipos y empresas. Cámbialo o cancélalo cuando lo necesites.</p><div class="plans-grid" id="plans-grid"></div></div></section>
+    <section class="contact-strip" id="contacto"><div><span class="eyebrow-pill">¿Tienes preguntas?</span><h2>Tu próximo lugar de trabajo te espera.</h2></div><a class="button" href="mailto:hola@cospace.co">Hablemos <span>→</span></a></section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-main section-shell"><div class="footer-brand"><a class="logo logo-light" href="#inicio"><span class="logo-mark">C</span><span>Co<span>Space</span></span></a><p>Espacios que impulsan<br>grandes ideas.</p></div><div><h3>Enlaces</h3><a href="#espacios">Espacios</a><a href="#sedes">Nuestras sedes</a><a href="#planes">Planes</a><a href="auth.html?mode=login">Iniciar sesión</a></div><div><h3>Legal</h3><a href="#">Términos y condiciones</a><a href="#">Política de privacidad</a><a href="#">Política de cookies</a></div><div><h3>Visítanos</h3><p>Centro Mayor<br>Santa Fe · Plaza Central<br>Mallplaza NQS · Nuestro Bogotá</p></div></div><div class="footer-bottom section-shell"><span>© 2026 CoSpace. Todos los derechos reservados.</span><span>Trabaja. Conecta. Crea.</span></div></footer>
+  <div class="toast" id="toast" role="status"></div><script src="shared-data.js"></script><script src="landing.js"></script>
+</body>
+</html>

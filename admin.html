@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoSpace | Panel administrativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">C</span><span>CoSpace</span></div>
+      <p class="eyebrow">GESTIÓN DE ESPACIOS</p>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Resumen</button>
+        <button class="nav-item" data-view="spaces"><span class="nav-icon">▦</span>Espacios</button>
+        <button class="nav-item" data-view="bookings"><span class="nav-icon">▣</span>Reservas</button>
+        <button class="nav-item" data-view="payments"><span class="nav-icon">◈</span>Pagos</button>
+        <button class="nav-item" data-view="locations"><span class="nav-icon">⌖</span>Sedes</button>
+      </nav>
+      <p class="eyebrow secondary-label">ADMINISTRACIÓN</p>
+      <nav class="main-nav">
+        <button class="nav-item" data-view="members"><span class="nav-icon">♙</span>Miembros</button>
+        <button class="nav-item" data-view="plans"><span class="nav-icon">◇</span>Planes</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-item"><span class="nav-icon">⚙</span>Configuración</button>
+        <div class="profile"><div class="avatar">LG</div><div><strong>Laura Gómez</strong><small>Administradora</small></div><span class="profile-more">···</span></div>
+      </div>
+    </aside>
+    <main class="content">
+      <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><div class="breadcrumb">CoSpace <span>/</span> <strong id="breadcrumb-label">Resumen</strong></div><div class="top-actions"><button class="icon-button" title="Notificaciones">♧<i></i></button><div class="date-pill">10 septiembre, 2026 <span>⌄</span></div></div></header>
+      <div id="view-root"></div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

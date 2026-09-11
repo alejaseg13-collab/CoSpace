@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CoSpace | Autenticación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css"><link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <main class="auth-layout">
+    <section class="auth-visual">
+      <a class="logo" href="index.html"><span class="logo-mark">C</span><span>Co<span>Space</span></span></a>
+      <div><h1>Gestiona tus reservas<br>y pagos <span>en un solo lugar</span></h1><p>Espacios de coworking, salas de reunión y oficinas privadas, cuando los necesites.</p></div>
+      <div class="auth-visual-photo"></div>
+      <div class="auth-benefits"><div class="auth-benefit"><i>▣</i><span>Reserva fácilmente<br>en segundos</span></div><div class="auth-benefit"><i>♢</i><span>Pagos seguros<br>y confiables</span></div><div class="auth-benefit"><i>♧</i><span>Espacios para<br>tus proyectos</span></div></div>
+    </section>
+    <section class="auth-panel">
+      <h2 id="auth-title">Iniciar sesión</h2><p id="auth-description">Bienvenido de nuevo. Ingresa a tu cuenta para continuar.</p>
+      <form class="auth-form" id="auth-form" novalidate>
+        <label id="name-field">Nombre completo <input name="nombre" placeholder="Tu nombre completo" autocomplete="name"></label>
+        <label id="phone-field">Teléfono <input name="telefono" placeholder="300 000 0000" autocomplete="tel"></label>
+        <label>Correo electrónico <input name="correo" type="email" placeholder="jul@email.com" autocomplete="email" required></label>
+        <label id="location-field">Sede de preferencia <select id="sede-preferida" name="sedePreferidaId"><option value="">Selecciona una sede</option></select></label>
+        <label>Contraseña <span class="password-wrap"><input id="password" name="contrasena" type="password" placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" required><button type="button" class="password-toggle" data-target="password">◉</button></span></label>
+        <label id="confirm-field">Confirmar contraseña <span class="password-wrap"><input id="confirm-password" name="confirmarContrasena" type="password" placeholder="Repite tu contraseña" autocomplete="new-password"><button type="button" class="password-toggle" data-target="confirm-password">◉</button></span></label>
+        <div class="auth-row"><label class="check-label" id="terms-field"><input name="aceptaTerminos" type="checkbox"> Acepto términos y condiciones</label><label class="check-label" id="remember-field" hidden><input name="recuerdame" type="checkbox"> Recuérdame</label><a id="recovery-link" hidden href="#">¿Olvidaste tu contraseña?</a></div>
+        <p class="form-error" id="form-error" role="alert"></p>
+        <button class="button" id="auth-submit" type="submit">Iniciar sesión <span>→</span></button>
+        <p class="auth-switch" id="auth-switch">¿No tienes una cuenta? <a href="auth.html?mode=register">Regístrate</a></p>
+        <div class="auth-divider">o continúa con</div><button class="google-button" id="google-button" type="button">🌈 &nbsp; Continuar con Google</button>
+      </form>
+    </section>
+  </main>
+  <script src="api-config.js"></script><script src="auth.js"></script>
+</body>
+</html>

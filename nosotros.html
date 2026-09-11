@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoSpace | Nosotros / Nuestras sedes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <style>
+    .locations-page { min-height: calc(100vh - 66px); padding: 28px 0 46px; background: var(--pale); }
+    .locations-page h1 { margin: 12px 0 19px; font: 700 34px 'Space Grotesk', sans-serif; letter-spacing: -1px; }
+    .locations-page h1 span { color: var(--teal); }
+    .map-panel { position: relative; height: 345px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #d8e8e8; box-shadow: 0 3px 10px #19385e0c; }
+    #city-map { width: 100%; height: 100%; }
+    .map-note { position: absolute; z-index: 500; right: 14px; bottom: 13px; padding: 7px 10px; border-radius: 5px; color: var(--muted); background: #fff; font-size: 9px; box-shadow: 0 2px 8px #19385e22; }
+    .map-pin { width: 16px; height: 16px; border: 3px solid #fff; border-radius: 50%; background: var(--teal); box-shadow: 0 1px 4px #19385e66; }
+    .leaflet-popup-content { margin: 12px 14px; font-family: 'DM Sans', sans-serif; }
+    .leaflet-popup-content strong { color: var(--navy); font-family: 'Space Grotesk', sans-serif; }
+    .leaflet-popup-content small { display: block; margin-top: 4px; color: var(--muted); }
+    .location-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 17px; }
+    .location-detail { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 3px 9px #19385e08; }
+    .location-detail-photo { height: 130px; background-position: center; background-size: cover; }
+    .location-detail:nth-child(1) .location-detail-photo { background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=700&q=82'); }
+    .location-detail:nth-child(2) .location-detail-photo { background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=82'); }
+    .location-detail:nth-child(3) .location-detail-photo { background-image: url('https://images.unsplash.com/photo-1497366412874-3415097a27e7?auto=format&fit=crop&w=700&q=82'); }
+    .location-detail:nth-child(4) .location-detail-photo { background-image: url('https://images.unsplash.com/photo-1497366811360-8b9f1a57c69d?auto=format&fit=crop&w=700&q=82'); }
+    .location-detail:nth-child(5) .location-detail-photo { background-image: url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=700&q=82'); }
+    .location-detail-content { padding: 13px 14px 14px; }
+    .location-detail h2 { margin: 0 0 5px; font-size: 16px; }
+    .location-address,.location-hours { margin: 0 0 5px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .service-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 4px; margin: 13px 0 14px; }
+    .service { display: flex; align-items: center; gap: 4px; color: #516a83; font-size: 8px; white-space: nowrap; }
+    .service-icon { width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; color: var(--navy); background: #edf6f7; font-size: 10px; }
+    .location-detail .button { width: 100%; padding: 9px; font-size: 10px; }
+    @media (max-width: 800px) { .location-cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .locations-page h1 { font-size: 28px; } .map-panel { height: 270px; } .location-cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html"><span class="logo-mark">C</span><span>Co<span>Space</span></span></a>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">
+      <a href="index.html">Inicio</a><a href="index.html#espacios">Espacios</a><a class="active" href="nosotros.html">Nuestras Sedes</a><a href="index.html#planes">Planes</a><a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="header-actions"><a class="login-link" href="auth.html?mode=login">Iniciar sesión</a><a class="button button-small" href="auth.html?mode=register">Regístrate</a></div>
+  </header>
+  <main class="locations-page">
+    <div class="section-shell">
+      <h1>Nosotros <span>/</span> Nuestras Sedes</h1>
+      <div class="map-panel"><div id="city-map" aria-label="Mapa de las cinco sedes CoSpace en Bogotá"></div><span class="map-note">Mapa de ubicaciones CoSpace · Bogotá</span></div>
+      <div class="location-cards" id="location-cards"></div>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="footer-main section-shell"><div class="footer-brand"><a class="logo logo-light" href="index.html"><span class="logo-mark">C</span><span>Co<span>Space</span></span></a><p>Espacios que impulsan<br>grandes ideas.</p></div><div><h3>Enlaces</h3><a href="index.html">Inicio</a><a href="index.html#espacios">Espacios</a><a href="index.html#planes">Planes</a><a href="nosotros.html">Nosotros</a></div><div><h3>Legal</h3><a href="#">Términos y condiciones</a><a href="#">Política de privacidad</a><a href="#">Política de cookies</a></div><div><h3>Síguenos</h3><p>LinkedIn &nbsp; Instagram<br>Facebook &nbsp; YouTube</p></div></div><div class="footer-bottom section-shell"><span>© 2026 CoSpace. Todos los derechos reservados.</span><span>Trabaja. Conecta. Crea.</span></div></footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="api-config.js"></script><script src="nosotros.js"></script>
+</body>
+</html>

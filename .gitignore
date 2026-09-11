@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+*.user
+*.suo
+appsettings.Development.json
+firebase-adminsdk-*.json
+.env
+.env.*
+!.env.example
+.vscode/
+.vs/
+Thumbs.db
+Desktop.ini
