@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cospace-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/sedes
+    envVars:
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false

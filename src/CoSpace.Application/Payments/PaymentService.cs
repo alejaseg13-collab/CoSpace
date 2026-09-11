@@ -21,7 +21,7 @@ public sealed class PaymentService(IBookingRepository bookings, IPaymentReposito
     public async Task<IReadOnlyList<PaymentHistory>> HistoryAsync(string usuarioId, CancellationToken ct)
     {
         var result = new List<PaymentHistory>();
-        foreach (var reservation in bookings.All().Where(item => item.UsuarioId == usuarioId))
+        foreach (var reservation in (await bookings.AllAsync(ct)).Where(item => item.UsuarioId == usuarioId))
         {
             var payment = await payments.FindByReservationAsync(reservation.Id, ct);
             var space = CatalogSeed.Espacios.FirstOrDefault(item => item.Id == reservation.EspacioId);

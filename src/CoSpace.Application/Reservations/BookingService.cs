@@ -6,7 +6,7 @@ public interface IBookingRepository
 {
     Task<IReadOnlyList<Reserva>> FindBySpaceAndDateAsync(string espacioId, DateOnly fecha, CancellationToken ct);
     Task<Reserva?> FindByIdAsync(string reservaId, CancellationToken ct);
-    IReadOnlyList<Reserva> All();
+    Task<IReadOnlyList<Reserva>> AllAsync(CancellationToken ct);
     Task AddAsync(Reserva reserva, CancellationToken ct);
     Task UpdateAsync(Reserva reserva, CancellationToken ct);
 }

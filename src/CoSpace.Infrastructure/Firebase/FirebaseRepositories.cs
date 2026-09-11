@@ -1,40 +1,86 @@
 using CoSpace.Application.Reservations;
 using CoSpace.Domain;
-using System.Collections.Concurrent;
+using Google.Cloud.Firestore;
 
 namespace CoSpace.Infrastructure.Firebase;
 
-// Implementaciones reales deben usar FirebaseAdmin y transacciones para el consecutivo.
-public sealed class FirebaseBookingRepository : IBookingRepository
+public sealed class FirebaseBookingRepository(FirestoreContext context) : IBookingRepository
 {
-    private readonly ConcurrentBag<Reserva> reservations = [];
-    public FirebaseBookingRepository()
+    private CollectionReference Reservations => context.Db.Collection("reservations");
+
+    public async Task<IReadOnlyList<Reserva>> FindBySpaceAndDateAsync(string espacioId, DateOnly fecha, CancellationToken ct)
     {
-        var users = new[] { "member-demo", "member-2", "member-3", "member-4", "member-5", "member-6", "member-7" };
-        for (var index = 0; index < 18; index++)
-        {
-            var space = CatalogSeed.Espacios[index * 7];
-            reservations.Add(new Reserva($"seed-rsv-{index + 1:000}", users[index % users.Length], space.Id, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-index * 3)), new TimeOnly(9, 0), new TimeOnly(11, 0), index % 6 == 0 ? EstadoReserva.Completada : EstadoReserva.Confirmada, space.PrecioHora * 2 * 1.19m, DateTime.UtcNow.AddDays(-index * 3)));
-        }
+        var snapshot = await Reservations.WhereEqualTo("espacioId", espacioId).WhereEqualTo("fecha", fecha.ToString("yyyy-MM-dd")).GetSnapshotAsync(ct);
+        return snapshot.Documents.Select(FromDocument).ToList();
     }
-    public Task<IReadOnlyList<Reserva>> FindBySpaceAndDateAsync(string espacioId, DateOnly fecha, CancellationToken ct) => Task.FromResult<IReadOnlyList<Reserva>>(reservations.Where(item => item.EspacioId == espacioId && item.Fecha == fecha).ToList());
-    public Task<Reserva?> FindByIdAsync(string reservaId, CancellationToken ct) => Task.FromResult(reservations.FirstOrDefault(item => item.Id == reservaId));
-    public IReadOnlyList<Reserva> All() => reservations.ToList();
-    public Task AddAsync(Reserva reserva, CancellationToken ct) { reservations.Add(reserva); return Task.CompletedTask; }
-    public Task UpdateAsync(Reserva reserva, CancellationToken ct) => Task.CompletedTask;
+
+    public async Task<Reserva?> FindByIdAsync(string reservaId, CancellationToken ct)
+    {
+        var document = await Reservations.Document(reservaId).GetSnapshotAsync(ct);
+        return document.Exists ? FromDocument(document) : null;
+    }
+
+    public async Task<IReadOnlyList<Reserva>> AllAsync(CancellationToken ct)
+    {
+        var snapshot = await Reservations.GetSnapshotAsync(ct);
+        return snapshot.Documents.Select(FromDocument).ToList();
+    }
+
+    public Task AddAsync(Reserva reserva, CancellationToken ct) => Reservations.Document(reserva.Id).SetAsync(ToDocument(reserva), cancellationToken: ct);
+    public Task UpdateAsync(Reserva reserva, CancellationToken ct) => Reservations.Document(reserva.Id).SetAsync(ToDocument(reserva), cancellationToken: ct);
+
+    private static Dictionary<string, object?> ToDocument(Reserva item) => new()
+    {
+        ["usuarioId"] = item.UsuarioId, ["espacioId"] = item.EspacioId, ["fecha"] = item.Fecha.ToString("yyyy-MM-dd"),
+        ["horaInicio"] = item.HoraInicio.ToString("HH:mm"), ["horaFin"] = item.HoraFin.ToString("HH:mm"), ["estado"] = (int)item.Estado,
+        ["precioTotal"] = item.PrecioTotal, ["creadoEn"] = Timestamp.FromDateTime(item.CreadoEn.ToUniversalTime())
+    };
+
+    private static Reserva FromDocument(DocumentSnapshot document)
+    {
+        var data = document.ToDictionary();
+        return new Reserva(document.Id, (string)data["usuarioId"], (string)data["espacioId"], DateOnly.Parse((string)data["fecha"]),
+            TimeOnly.Parse((string)data["horaInicio"]), TimeOnly.Parse((string)data["horaFin"]), (EstadoReserva)Convert.ToInt32(data["estado"]),
+            Convert.ToDecimal(data["precioTotal"]), ((Timestamp)data["creadoEn"]).ToDateTime());
+    }
 }
 
-public sealed class FirebasePaymentRepository : IPaymentRepository
+public sealed class FirebasePaymentRepository(FirestoreContext context) : IPaymentRepository
 {
-    private readonly ConcurrentDictionary<string, Pago> payments = new();
-    private int invoiceSequence = 1245;
-    public FirebasePaymentRepository()
+    private CollectionReference Payments => context.Db.Collection("payments");
+
+    public async Task<string> NextInvoiceNumberAsync(CancellationToken ct)
     {
-        for (var index = 0; index < 18; index++)
-            payments.TryAdd($"seed-pay-{index + 1:000}", new Pago($"seed-pay-{index + 1:000}", $"seed-rsv-{index + 1:000}", $"FAC-SEED-{index + 1:0000}", 50000 + index * 12500, index % 2 == 0 ? MetodoPago.Tarjeta : MetodoPago.Pse, index % 5 == 0 ? EstadoPago.Pendiente : EstadoPago.Pagado, DateTime.UtcNow.AddDays(-index * 3)));
+        var counter = context.Db.Collection("settings").Document("invoice");
+        return await context.Db.RunTransactionAsync(async transaction =>
+        {
+            var snapshot = await transaction.GetSnapshotAsync(counter);
+            var next = snapshot.Exists ? Convert.ToInt32(snapshot.GetValue<long>("value")) + 1 : 1246;
+            transaction.Set(counter, new Dictionary<string, object> { ["value"] = next });
+            return $"FAC-{next:000000}";
+        }, cancellationToken: ct);
     }
-    public Task<string> NextInvoiceNumberAsync(CancellationToken ct) => Task.FromResult($"FAC-{Interlocked.Increment(ref invoiceSequence):000000}");
-    public Task AddAsync(Pago pago, CancellationToken ct) { payments[pago.Id] = pago; return Task.CompletedTask; }
-    public Task<Pago?> FindByReservationAsync(string reservaId, CancellationToken ct) => Task.FromResult(payments.Values.FirstOrDefault(item => item.ReservaId == reservaId));
-    public Task UpdateAsync(Pago pago, CancellationToken ct) { payments[pago.Id] = pago; return Task.CompletedTask; }
+
+    public Task AddAsync(Pago pago, CancellationToken ct) => Payments.Document(pago.Id).SetAsync(ToDocument(pago), cancellationToken: ct);
+
+    public async Task<Pago?> FindByReservationAsync(string reservaId, CancellationToken ct)
+    {
+        var snapshot = await Payments.WhereEqualTo("reservaId", reservaId).Limit(1).GetSnapshotAsync(ct);
+        return snapshot.Documents.FirstOrDefault() is { } document ? FromDocument(document) : null;
+    }
+
+    public Task UpdateAsync(Pago pago, CancellationToken ct) => Payments.Document(pago.Id).SetAsync(ToDocument(pago), cancellationToken: ct);
+
+    private static Dictionary<string, object?> ToDocument(Pago item) => new()
+    {
+        ["reservaId"] = item.ReservaId, ["numeroFactura"] = item.NumeroFactura, ["monto"] = item.Monto,
+        ["metodo"] = (int)item.Metodo, ["estado"] = (int)item.Estado, ["fecha"] = Timestamp.FromDateTime(item.Fecha.ToUniversalTime())
+    };
+
+    private static Pago FromDocument(DocumentSnapshot document)
+    {
+        var data = document.ToDictionary();
+        return new Pago(document.Id, (string)data["reservaId"], (string)data["numeroFactura"], Convert.ToDecimal(data["monto"]),
+            (MetodoPago)Convert.ToInt32(data["metodo"]), (EstadoPago)Convert.ToInt32(data["estado"]), ((Timestamp)data["fecha"]).ToDateTime());
+    }
 }

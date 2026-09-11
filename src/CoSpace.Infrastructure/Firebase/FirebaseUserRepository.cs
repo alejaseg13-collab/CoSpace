@@ -1,25 +1,45 @@
-using System.Collections.Concurrent;
 using CoSpace.Application.Authentication;
 using CoSpace.Domain;
+using Google.Cloud.Firestore;
 
 namespace CoSpace.Infrastructure.Firebase;
 
-public sealed class FirebaseUserRepository : IUserRepository
+public sealed class FirebaseUserRepository(FirestoreContext context) : IUserRepository
 {
-    private readonly ConcurrentDictionary<string, Usuario> users = new(StringComparer.OrdinalIgnoreCase);
+    private CollectionReference Users => context.Db.Collection("users");
 
-    public FirebaseUserRepository()
+    public async Task<Usuario?> FindByEmailAsync(string correo, CancellationToken ct)
     {
-        var admin = new Usuario("admin-demo", "Laura Gómez", "admin@cospace.co", "3000000000", "60FE74406E7F353ED979F350F2FBB6A2E8690A5FA7D1B0C32983D1D8B3F95F67", Rol.Administrador, null, "sede-centro-mayor", DateTime.UtcNow);
-        users.TryAdd(admin.Correo, admin);
-        var seeds = new[] { ("Sebastián Gil", "sebastian.gil@example.com", "plan-pro", "sede-centro-mayor"), ("Mariana Torres", "mariana@example.com", "plan-basico", "sede-santa-fe"), ("Daniel Rojas", "daniel@example.com", "plan-empresarial", "sede-plaza-central"), ("Sofía Martínez", "sofia@example.com", "plan-pro", "sede-mallplaza-nqs"), ("Camilo Pérez", "camilo@example.com", "plan-basico", "sede-nuestro-bogota"), ("Valentina Ruiz", "valentina@example.com", "plan-pro", "sede-centro-mayor"), ("Nicolás León", "nicolas@example.com", "plan-basico", "sede-santa-fe") };
-        var seedIndex = 0;
-        foreach (var (name, email, plan, sede) in seeds)
-            users.TryAdd(email, new Usuario(seedIndex++ == 0 ? "member-demo" : $"member-{seedIndex}", name, email, "3000000000", "", Rol.Miembro, plan, sede, DateTime.UtcNow.AddDays(-20)));
+        var snapshot = await Users.WhereEqualTo("correo", correo.Trim().ToLowerInvariant()).Limit(1).GetSnapshotAsync(ct);
+        return snapshot.Documents.FirstOrDefault() is { } document ? FromDocument(document) : null;
     }
 
-    public Task<Usuario?> FindByEmailAsync(string correo, CancellationToken ct) => Task.FromResult(users.TryGetValue(correo.Trim(), out var user) ? user : null);
-    public Task<Usuario?> FindByIdAsync(string id, CancellationToken ct) => Task.FromResult(users.Values.FirstOrDefault(user => user.Id == id));
-    public Task AddAsync(Usuario usuario, CancellationToken ct) => Task.FromResult(users.TryAdd(usuario.Correo, usuario) ? usuario : throw new InvalidOperationException("Ya existe un usuario con ese correo."));
-    public Task UpdateAsync(Usuario usuario, CancellationToken ct) { users[usuario.Correo] = usuario; return Task.CompletedTask; }
+    public async Task<Usuario?> FindByIdAsync(string id, CancellationToken ct)
+    {
+        var document = await Users.Document(id).GetSnapshotAsync(ct);
+        return document.Exists ? FromDocument(document) : null;
+    }
+
+    public async Task AddAsync(Usuario usuario, CancellationToken ct)
+    {
+        if (await FindByEmailAsync(usuario.Correo, ct) is not null) throw new InvalidOperationException("Ya existe un usuario con ese correo.");
+        await Users.Document(usuario.Id).SetAsync(ToDocument(usuario), cancellationToken: ct);
+    }
+
+    public Task UpdateAsync(Usuario usuario, CancellationToken ct) => Users.Document(usuario.Id).SetAsync(ToDocument(usuario), cancellationToken: ct);
+
+    private static Dictionary<string, object?> ToDocument(Usuario user) => new()
+    {
+        ["id"] = user.Id, ["nombre"] = user.Nombre, ["correo"] = user.Correo.ToLowerInvariant(), ["telefono"] = user.Telefono,
+        ["contrasena"] = user.Contrasena, ["rol"] = (int)user.Rol, ["planId"] = user.PlanId, ["sedePreferidaId"] = user.SedePreferidaId,
+        ["fechaRegistro"] = Timestamp.FromDateTime(user.FechaRegistro.ToUniversalTime())
+    };
+
+    private static Usuario FromDocument(DocumentSnapshot document)
+    {
+        var data = document.ToDictionary();
+        return new Usuario(document.Id, (string)data["nombre"], (string)data["correo"], (string)data["telefono"], (string)data["contrasena"],
+            (Rol)Convert.ToInt32(data["rol"]), data.GetValueOrDefault("planId") as string, data.GetValueOrDefault("sedePreferidaId") as string,
+            ((Timestamp)data["fechaRegistro"]).ToDateTime());
+    }
 }

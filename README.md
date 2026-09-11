@@ -29,4 +29,24 @@ La API compila con .NET 8, pero los repositorios llamados `Firebase*` todavía u
 
 ## Despliegue
 
+### Firebase/Firestore
+
+En Firebase Console crea un proyecto, habilita Firestore y crea una cuenta de servicio en **Project settings > Service accounts**. Conserva el JSON fuera de Git. La API usa las colecciones `users`, `reservations`, `payments` y `settings/invoice`.
+
+### API en Render
+
+Este repositorio incluye `Dockerfile` y `render.yaml`. Crea un Web Service desde GitHub con runtime Docker y configura estas variables:
+
+- `FIREBASE_PROJECT_ID`: ID del proyecto Firebase.
+- `FIREBASE_SERVICE_ACCOUNT_JSON`: contenido completo del JSON de la cuenta de servicio.
+- `FRONTEND_ORIGIN`: dominio final de Vercel, por ejemplo `https://cospace.vercel.app`.
+
+Render entregará una URL similar a `https://cospace-api.onrender.com`. En Vercel crea la variable `BACKEND_URL` con esa URL, sin añadir `/api`.
+
+### Frontend y proxy en Vercel
+
+El archivo `api/[...path].js` funciona como proxy `/api/*` y usa `BACKEND_URL`. Importa el repositorio en Vercel con la raíz del proyecto como Root Directory. El frontend usa `/api` automáticamente cuando se abre fuera de localhost, por lo que el navegador solo verá el dominio de Vercel.
+
+La cuenta de servicio nunca debe subirse al repositorio. Si cambia el dominio de Vercel, actualiza `FRONTEND_ORIGIN` en Render.
+
 El frontend es estático y puede publicarse en Vercel. La API ASP.NET debe publicarse como un servicio separado compatible con .NET, por ejemplo Azure App Service, Render o Railway. Después coloca su URL pública en `api-config.js` y configura CORS para permitir únicamente el dominio final de Vercel.

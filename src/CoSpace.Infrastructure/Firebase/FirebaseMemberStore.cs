@@ -1,61 +1,70 @@
-using System.Collections.Concurrent;
 using CoSpace.Application.Members;
 using CoSpace.Domain;
+using Google.Cloud.Firestore;
 
 namespace CoSpace.Infrastructure.Firebase;
 
-public sealed class FirebaseMemberStore : IMemberStore
+public sealed class FirebaseMemberStore(FirestoreContext context) : IMemberStore
 {
-    private readonly ConcurrentDictionary<string, List<MemberReservation>> reservations = new();
-    private readonly ConcurrentDictionary<string, MemberPayment> payments = new();
+    private CollectionReference Reservations => context.Db.Collection("reservations");
+    private CollectionReference Payments => context.Db.Collection("payments");
 
-    public Task<IReadOnlyList<MemberReservation>> ReservationsAsync(string usuarioId, CancellationToken ct)
+    public async Task<IReadOnlyList<MemberReservation>> ReservationsAsync(string usuarioId, CancellationToken ct)
     {
-        var list = reservations.GetOrAdd(usuarioId, SeedReservations);
-        return Task.FromResult<IReadOnlyList<MemberReservation>>(list);
+        var snapshot = await Reservations.WhereEqualTo("usuarioId", usuarioId).GetSnapshotAsync(ct);
+        var result = new List<MemberReservation>();
+        foreach (var document in snapshot.Documents)
+        {
+            var data = document.ToDictionary();
+            var space = CatalogSeed.Espacios.FirstOrDefault(item => item.Id == (string)data["espacioId"]);
+            if (space is null) continue;
+            var payment = await PaymentForAsync(document.Id, ct);
+            result.Add(new MemberReservation(document.Id, space, DateOnly.Parse((string)data["fecha"]), TimeOnly.Parse((string)data["horaInicio"]),
+                TimeOnly.Parse((string)data["horaFin"]), (EstadoReserva)Convert.ToInt32(data["estado"]), payment?.NumeroFactura,
+                Convert.ToDecimal(data["precioTotal"])));
+        }
+        return result.OrderByDescending(item => item.Fecha).ToList();
     }
 
     public async Task<MemberPayment?> LastPaymentAsync(string usuarioId, CancellationToken ct)
     {
-        await ReservationsAsync(usuarioId, ct);
-        return payments.TryGetValue(usuarioId, out var payment) ? payment : null;
+        var reservations = await ReservationsAsync(usuarioId, ct);
+        foreach (var reservation in reservations)
+        {
+            var payment = await PaymentForAsync(reservation.Id, ct);
+            if (payment is not null && payment.Estado == EstadoPago.Pagado)
+                return new MemberPayment(payment.NumeroFactura, payment.Monto, payment.Metodo, payment.Estado, payment.Fecha, reservation.Id);
+        }
+        return null;
     }
 
     public async Task CancelAsync(string usuarioId, string reservaId, CancellationToken ct)
     {
-        var list = (List<MemberReservation>)await ReservationsAsync(usuarioId, ct);
-        var index = list.FindIndex(item => item.Id == reservaId);
-        if (index < 0) throw new KeyNotFoundException("Reserva no encontrada.");
-        var reservation = list[index];
-        if (reservation.Fecha < DateOnly.FromDateTime(DateTime.UtcNow)) throw new InvalidOperationException("Solo puedes cancelar reservas futuras.");
-        if (reservation.Estado == EstadoReserva.Cancelada) return;
-        list[index] = reservation with { Estado = EstadoReserva.Cancelada };
+        var document = await Reservations.Document(reservaId).GetSnapshotAsync(ct);
+        if (!document.Exists || (string)document.ToDictionary()["usuarioId"] != usuarioId) throw new KeyNotFoundException("Reserva no encontrada.");
+        var data = document.ToDictionary();
+        if (DateOnly.Parse((string)data["fecha"]) < DateOnly.FromDateTime(DateTime.UtcNow)) throw new InvalidOperationException("Solo puedes cancelar reservas futuras.");
+        if (Convert.ToInt32(data["estado"]) == (int)EstadoReserva.Cancelada) return;
+        await Reservations.Document(reservaId).UpdateAsync("estado", (int)EstadoReserva.Cancelada, cancellationToken: ct);
     }
 
     public async Task<string> InvoiceAsync(string usuarioId, string reservaId, CancellationToken ct)
     {
-        var list = await ReservationsAsync(usuarioId, ct);
-        var reservation = list.FirstOrDefault(item => item.Id == reservaId);
-        if (reservation is null || string.IsNullOrWhiteSpace(reservation.NumeroFactura)) throw new KeyNotFoundException("La reserva no tiene factura.");
-        return $"Factura {reservation.NumeroFactura}\nCoSpace\nReserva: {reservation.Espacio.Nombre}\nUbicación: {reservation.Espacio.Ubicacion}\nFecha: {reservation.Fecha:dd/MM/yyyy}\nTotal pagado: {reservation.PrecioTotal:C0}\nEstado: Pagado";
+        var document = await Reservations.Document(reservaId).GetSnapshotAsync(ct);
+        if (!document.Exists || (string)document.ToDictionary()["usuarioId"] != usuarioId) throw new KeyNotFoundException("Reserva no encontrada.");
+        var data = document.ToDictionary();
+        var payment = await PaymentForAsync(reservaId, ct);
+        var space = CatalogSeed.Espacios.FirstOrDefault(item => item.Id == (string)data["espacioId"]);
+        if (payment is null || string.IsNullOrWhiteSpace(payment.NumeroFactura) || space is null) throw new KeyNotFoundException("La reserva no tiene factura.");
+        return $"Factura {payment.NumeroFactura}\nCoSpace\nReserva: {space.Nombre}\nUbicación: {space.Ubicacion}\nFecha: {DateOnly.Parse((string)data["fecha"]):dd/MM/yyyy}\nTotal pagado: {Convert.ToDecimal(data["precioTotal"]):C0}\nEstado: Pagado";
     }
 
-    private List<MemberReservation> SeedReservations(string usuarioId)
+    private async Task<Pago?> PaymentForAsync(string reservaId, CancellationToken ct)
     {
-        var spaces = CatalogSeed.Espacios;
-        MemberReservation Item(int index, DateOnly date, string start, string end, EstadoReserva status, string? invoice, decimal total) =>
-            new($"rsv-member-{index}", spaces[index], date, TimeOnly.Parse(start), TimeOnly.Parse(end), status, invoice, total);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var items = new List<MemberReservation>
-        {
-            Item(0, today.AddDays(5), "09:00", "13:00", EstadoReserva.Confirmada, null, 48000),
-            Item(41, today.AddDays(-12), "14:00", "16:00", EstadoReserva.Completada, "FAC-000741", 190400),
-            Item(46, today.AddDays(-22), "09:00", "17:00", EstadoReserva.Completada, "FAC-000728", 333200),
-            Item(71, today.AddDays(-35), "10:00", "12:00", EstadoReserva.Cancelada, "FAC-000699", 166600),
-            Item(43, today.AddDays(-50), "15:00", "17:00", EstadoReserva.Completada, "FAC-000651", 226100),
-            Item(56, today.AddDays(-58), "09:00", "18:00", EstadoReserva.Completada, "FAC-000640", 416500)
-        };
-        payments[usuarioId] = new MemberPayment("FAC-000741", 190400, MetodoPago.Tarjeta, EstadoPago.Pagado, DateTime.UtcNow.AddDays(-12), items[1].Id);
-        return items;
+        var snapshot = await Payments.WhereEqualTo("reservaId", reservaId).Limit(1).GetSnapshotAsync(ct);
+        if (snapshot.Documents.FirstOrDefault() is not { } document) return null;
+        var data = document.ToDictionary();
+        return new Pago(document.Id, reservaId, (string)data["numeroFactura"], Convert.ToDecimal(data["monto"]), (MetodoPago)Convert.ToInt32(data["metodo"]),
+            (EstadoPago)Convert.ToInt32(data["estado"]), ((Timestamp)data["fecha"]).ToDateTime());
     }
 }

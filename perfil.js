@@ -1,4 +1,4 @@
-window.CoSpaceConfig = window.CoSpaceConfig || { apiBaseUrl: 'http://localhost:5050/api' };
+window.CoSpaceConfig = window.CoSpaceConfig || { apiBaseUrl: window.location.hostname === 'localhost' || window.location.protocol === 'file:' ? 'http://localhost:5050/api' : '/api' };
 const API = window.CoSpaceConfig.apiBaseUrl;
 const demoUser = { id: 'demo-member', nombre: 'Sebastián Gil', correo: 'sebastian.gil@example.com', telefono: '300 000 0000', rol: 0, planId: 'plan-pro', sedePreferidaId: 'sede-centro-mayor' };
 const locations = [['sede-centro-mayor','Centro Mayor'],['sede-santa-fe','Centro Comercial Santa Fe'],['sede-plaza-central','Plaza Central'],['sede-mallplaza-nqs','Mallplaza NQS'],['sede-nuestro-bogota','Nuestro Bogotá']];

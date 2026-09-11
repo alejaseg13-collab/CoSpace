@@ -1,4 +1,4 @@
-window.CoSpaceConfig = window.CoSpaceConfig || { apiBaseUrl: 'http://localhost:5050/api' };
+window.CoSpaceConfig = window.CoSpaceConfig || { apiBaseUrl: window.location.hostname === 'localhost' || window.location.protocol === 'file:' ? 'http://localhost:5050/api' : '/api' };
 const API = window.CoSpaceConfig.apiBaseUrl;
 const params = new URLSearchParams(location.search);
 const user = JSON.parse(localStorage.getItem('cospace-user') || 'null') || { id: 'demo-member', nombre: 'Sebastián Gil' };

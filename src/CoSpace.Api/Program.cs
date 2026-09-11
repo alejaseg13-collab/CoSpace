@@ -7,6 +7,8 @@ using CoSpace.Infrastructure.Firebase;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:10000");
+builder.Services.AddSingleton<FirestoreContext>();
 builder.Services.AddSingleton<IBookingRepository, FirebaseBookingRepository>();
 builder.Services.AddSingleton<IPaymentRepository, FirebasePaymentRepository>();
 builder.Services.AddScoped<BookingService>();
@@ -15,7 +17,12 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddSingleton<IMemberStore, FirebaseMemberStore>();
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<PaymentService>();
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+var allowedOrigin = builder.Configuration["FRONTEND_ORIGIN"];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+{
+    if (string.IsNullOrWhiteSpace(allowedOrigin)) policy.AllowAnyOrigin();
+    else policy.WithOrigins(allowedOrigin).AllowAnyHeader().AllowAnyMethod();
+}));
 var app = builder.Build();
 app.UseCors();
 
