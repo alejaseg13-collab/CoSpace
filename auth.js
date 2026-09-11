@@ -15,6 +15,7 @@ const recoveryLink = document.querySelector('#recovery-link');
 const submit = document.querySelector('#auth-submit');
 const switchText = document.querySelector('#auth-switch');
 const errorBox = document.querySelector('#form-error');
+const demoAccounts = document.querySelector('#demo-accounts');
 const sessionUser = JSON.parse(localStorage.getItem('cospace-user') || 'null');
 if (sessionUser && sessionUser.rol) localStorage.setItem('cospace-authenticated', 'true');
 if (mode === 'login') {
@@ -23,11 +24,18 @@ if (mode === 'login') {
   rememberField.hidden = false; recoveryLink.hidden = false; submit.innerHTML = 'Iniciar sesión <span>→</span>';
   switchText.innerHTML = '¿No tienes una cuenta? <a href="auth.html?mode=register">Regístrate</a>';
 } else {
+  demoAccounts.remove();
   title.textContent = 'Crea tu cuenta'; description.textContent = plan ? `Regístrate para comenzar con el plan ${plan}.` : 'Regístrate para reservar espacios y elegir tu plan.';
   rememberField.hidden = true; recoveryLink.hidden = true; submit.innerHTML = 'Registrarme <span>→</span>';
   switchText.innerHTML = '¿Ya tienes una cuenta? <a href="auth.html?mode=login">Inicia sesión</a>';
   loadLocations();
 }
+document.querySelectorAll('[data-demo-email]').forEach(button => button.addEventListener('click', () => {
+  form.elements.correo.value = button.dataset.demoEmail;
+  form.elements.contrasena.value = 'Demo1234!';
+  showError('Cuenta de ejemplo cargada. Pulsa Iniciar sesión.');
+  errorBox.classList.add('demo-notice');
+}));
 async function loadLocations() {
   const select = document.querySelector('#sede-preferida');
   try {

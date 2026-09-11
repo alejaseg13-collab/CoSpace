@@ -49,4 +49,13 @@ El archivo `vercel.json` funciona como proxy `/api/*` hacia Render. Importa el r
 
 La cuenta de servicio nunca debe subirse al repositorio. Si cambia el dominio de Vercel, actualiza `FRONTEND_ORIGIN` en Render.
 
+### Usuarios de ejemplo
+
+Para habilitar las cuentas demo en Firestore, configura `SEED_DEMO_USERS=true` en Render. La pantalla de login muestra botones para cargar estas credenciales:
+
+- Miembro: `sebastian.gil@example.com` / `Demo1234!`
+- Administradora: `admin@cospace.co` / `Demo1234!`
+
+Son cuentas únicamente para demostración; cambia o desactiva `SEED_DEMO_USERS` en un entorno real.
+
 El frontend es estático y puede publicarse en Vercel. La API ASP.NET debe publicarse como un servicio separado compatible con .NET, por ejemplo Azure App Service, Render o Railway. Después coloca su URL pública en `api-config.js` y configura CORS para permitir únicamente el dominio final de Vercel.

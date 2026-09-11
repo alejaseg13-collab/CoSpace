@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:10000");
 builder.Services.AddSingleton<FirestoreContext>();
+builder.Services.AddScoped<DemoDataSeeder>();
 builder.Services.AddSingleton<IBookingRepository, FirebaseBookingRepository>();
 builder.Services.AddSingleton<IPaymentRepository, FirebasePaymentRepository>();
 builder.Services.AddScoped<BookingService>();
@@ -25,6 +26,11 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 }));
 var app = builder.Build();
 app.UseCors();
+if (builder.Configuration.GetValue<bool>("SEED_DEMO_USERS"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().SeedAsync(CancellationToken.None);
+}
 
 app.MapPost("/api/auth/register", async (RegisterRequest request, AuthService auth, CancellationToken ct) =>
 {

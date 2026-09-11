@@ -11,3 +11,5 @@ services:
         sync: false
       - key: FRONTEND_ORIGIN
         sync: false
+      - key: SEED_DEMO_USERS
+        value: "true"
