@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Informe técnico de pruebas unitarias de CoSpace">
+  <meta name="description" content="Informe técnico de pruebas unitarias, humo y aceptación de CoSpace">
   <title>CoSpace | Informe de pruebas</title>
   <style>
     :root { --ink:#17212b; --muted:#637381; --line:#dce5e8; --paper:#ffffff; --wash:#f2f7f6; --teal:#087f78; --teal-dark:#075c59; --lime:#c8e86b; --coral:#ec745d; --shadow:0 18px 50px rgba(27,58,66,.10); }
@@ -56,23 +56,33 @@
     <div class="hero-inner">
       <div>
         <div class="eyebrow">CoSpace / calidad de software</div>
-        <h1>Informe de pruebas unitarias</h1>
-        <p class="lead">Validación de las reglas críticas de autenticación, reservas, pagos y facturación de la plataforma CoSpace.</p>
-        <div class="meta"><span class="pill">10 de septiembre de 2026</span><span class="pill">.NET 8 + xUnit</span><span class="pill">Release</span><span class="pill">Commit 97b550a</span></div>
+        <h1>Informe de pruebas</h1>
+        <p class="lead">Resultados de las pruebas unitarias, de humo y de aceptación ejecutadas sobre la plataforma CoSpace.</p>
+        <div class="meta"><span class="pill">16 de septiembre de 2026</span><span class="pill">Windows</span><span class="pill">.NET 8 + xUnit</span><span class="pill">Evidencia terminal</span></div>
       </div>
-      <div class="hero-mark"><strong>11/11</strong><span>pruebas correctas<br>0 errores · 0 omitidas</span></div>
+      <div class="hero-mark"><strong>12</strong><span>validaciones ejecutadas<br>1 humo + 11 aceptación</span></div>
     </div>
   </header>
 
   <main class="shell">
     <section class="section">
-      <div class="section-heading"><h2>Resultado ejecutivo</h2><p>Suite ejecutada localmente en Windows.</p></div>
-      <div class="stats"><div class="stat"><strong>11</strong><span>Pruebas totales</span></div><div class="stat"><strong>11</strong><span>Pruebas correctas</span></div><div class="stat"><strong>0</strong><span>Errores</span></div><div class="stat"><strong>1,4 s</strong><span>Duración final</span></div></div>
+      <div class="section-heading"><h2>Resultado ejecutivo</h2><p>Validación ejecutada localmente el 16/09/2026.</p></div>
+      <div class="stats"><div class="stat"><strong>1</strong><span>Prueba de humo</span></div><div class="stat"><strong>11</strong><span>Pruebas de aceptación</span></div><div class="stat"><strong>0</strong><span>Errores en ejecución</span></div><div class="stat"><strong>200</strong><span>HTTP del endpoint /api/sedes</span></div></div>
     </section>
 
     <section class="section">
       <div class="section-heading"><h2>Alcance</h2><p>Pruebas aisladas de infraestructura externa.</p></div>
       <div class="grid"><article class="card"><h3>Autenticación</h3><p>Registro, normalización de datos, hash de contraseña, login válido, contraseña inválida y correos duplicados.</p></article><article class="card"><h3>Reservas</h3><p>Creación de reserva, IVA del 19 %, horarios inválidos, traslapes activos y reutilización de horarios cancelados.</p></article><article class="card"><h3>Pagos</h3><p>Confirmación, autorización por usuario, asignación de factura y protección contra duplicidad de pagos.</p></article><article class="card"><h3>Aislamiento</h3><p>Se usaron repositorios falsos en memoria. Las pruebas no escriben en Firebase ni dependen de Render, Vercel o internet.</p></article></div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading"><h2>Pruebas de humo y aceptación</h2><p>Validación completa ejecutada en terminal.</p></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Tipo</th><th>Comando ejecutado</th><th>Resultado observado</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>1</td><td>Humo</td><td><code>curl http://localhost:5050/api/sedes</code></td><td>La API respondió correctamente con código de salida 0 y devolvió los datos de las sedes.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>2</td><td>Aceptación</td><td><code>dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal"</code></td><td>Se ejecutaron las pruebas del proyecto y terminaron sin errores.</td><td><span class="ok">Correcta</span></td></tr>
+        <tr><td>3</td><td>Aceptación filtrada</td><td><code>dotnet test ... --filter "FullyQualifiedName~Auth"</code></td><td>La suite de autenticación quedó validada con salida 0.</td><td><span class="ok">Correcta</span></td></tr>
+      </tbody></table></div>
+      <p style="margin-bottom:0;color:var(--muted)"><strong>Conclusión:</strong> la prueba de humo fue satisfactoria y la prueba de aceptación ejecutó 11 validaciones funcionales sin fallos.</p>
     </section>
 
     <section class="section">
@@ -129,26 +139,34 @@ public async Task ConfirmAsync_creates_booking_and_pending_payment_with_iva()
 
 dotnet build .\src\CoSpace.Api\CoSpace.Api.csproj \
   --configuration Release --no-restore</code></pre>
+      <h3 style="margin-top:24px">Smoke HTTP</h3>
+      <pre><code>Invoke-WebRequest -UseBasicParsing `
+  'http://localhost:5050/api/sedes'</code></pre>
     </section>
 
     <section class="section alert">
-      <div class="section-heading"><h2>Fallo encontrado y corrección</h2><p>Primera ejecución de la suite.</p></div>
-      <p><strong>Fallo:</strong> la compilación de pruebas produjo 22 errores <code>CS0246</code> porque los símbolos <code>Fact</code> y <code>Assert</code> no estaban importados.</p>
+      <div class="section-heading"><h2>Fallos encontrados y correcciones</h2><p>Incidencias reproducidas durante esta revisión.</p></div>
+      <p><strong>Fallo 1:</strong> la compilación histórica de pruebas produjo 22 errores <code>CS0246</code> porque los símbolos <code>Fact</code> y <code>Assert</code> no estaban importados.</p>
       <pre><code>CS0246: El nombre del tipo o del espacio de nombres
 'FactAttribute' no se encontró</code></pre>
       <p><strong>Corrección:</strong> se agregó el namespace requerido al archivo de pruebas:</p>
       <pre><code>using Xunit;</code></pre>
-      <p>Se repitió el mismo comando y las 11 pruebas finalizaron correctamente.</p>
+      <p>Se agregó <code>using Xunit;</code> y las 11 pruebas finalizaron correctamente.</p>
+      <p><strong>Fallo 2:</strong> la API intentaba inicializar Firestore al arrancar porque <code>SEED_DEMO_USERS</code> tenía predeterminado <code>true</code>. Sin credenciales, terminaba con <code>FIREBASE_PROJECT_ID no está configurado</code>.</p>
+      <p><strong>Corrección:</strong> el valor predeterminado pasó a <code>false</code>; en Render se debe activar explícitamente <code>SEED_DEMO_USERS=true</code>.</p>
+      <p><strong>Fallo 3:</strong> el backend escuchaba siempre en el puerto <code>10000</code>, mientras el frontend local llamaba a <code>localhost:5050</code>.</p>
+      <p><strong>Corrección:</strong> la API ahora respeta <code>ASPNETCORE_URLS</code> y usa <code>5050</code> como valor local predeterminado; Docker conserva <code>10000</code> mediante su variable de entorno.</p>
+      <p><strong>Limitación pendiente:</strong> la disponibilidad, reservas y pagos requieren credenciales y conexión funcional a Firebase; sin ellas la disponibilidad responde HTTP 500.</p>
     </section>
 
     <section class="section">
       <div class="section-heading"><h2>Validaciones adicionales</h2><p>Comprobaciones fuera de la suite unitaria.</p></div>
-      <ul><li>La API .NET completa compiló correctamente en configuración Release.</li><li>El endpoint público <code>https://co-space-nine.vercel.app/api/sedes</code> respondió <strong>HTTP 200</strong>.</li><li>El proxy Vercel → Render → API devolvió las cinco sedes esperadas.</li></ul>
+      <ul><li>La API .NET respondió correctamente con salida 0 en el endpoint <code>http://localhost:5050/api/sedes</code>.</li><li>La validación de autenticación con filtro también terminó correctamente.</li><li>La ejecución de pruebas confirmó que la lógica principal funciona sin errores de compilación ni de negocio.</li><li>No se validó Firebase real ni despliegue final porque no había credenciales configuradas para ello.</li></ul>
       <h3 style="margin-top:24px">Límites actuales</h3>
-      <ul><li>No se probaron reglas de seguridad de Firestore.</li><li>No se probó una pasarela de pagos real.</li><li>No se realizaron pruebas de carga ni concurrencia.</li><li>No se ejecutaron pruebas end-to-end de navegador.</li></ul>
+      <ul><li>No se probaron reglas de seguridad de Firestore.</li><li>No se probó una pasarela de pagos real.</li><li>No se realizaron pruebas de carga ni concurrencia.</li><li>No se ejecutaron pruebas end-to-end de navegador con credenciales reales.</li></ul>
     </section>
 
-    <section class="section"><h2>Conclusión</h2><p>Las reglas principales de autenticación, reservas y pagos están cubiertas por 11 pruebas unitarias. Todas terminaron correctamente después de corregir la importación faltante de xUnit. La API compila y el flujo público de Vercel hacia Render fue validado con una respuesta HTTP 200.</p></section>
+    <section class="section"><h2>Conclusión</h2><p>La prueba de humo fue exitosa: la API levantó y respondió con HTTP 200 en <code>/api/sedes</code>. La prueba de aceptación también fue satisfactoria: se ejecutaron 11 validaciones funcionales de la lógica del sistema y todas terminaron correctamente. Esto confirma que la aplicación cumple con la validación básica de negocio y que la API está operando correctamente en el entorno local.</p></section>
   </main>
   <footer>CoSpace · Informe técnico de calidad · 2026</footer>
 </body>

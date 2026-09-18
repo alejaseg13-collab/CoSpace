@@ -51,7 +51,7 @@ La cuenta de servicio nunca debe subirse al repositorio. Si cambia el dominio de
 
 ### Usuarios de ejemplo
 
-Para habilitar las cuentas demo en Firestore, configura `SEED_DEMO_USERS=true` en Render. La pantalla de login muestra botones para cargar estas credenciales:
+Para habilitar las cuentas demo en Firestore, configura explícitamente `SEED_DEMO_USERS=true` en Render. En local el valor predeterminado es `false`, para que la API pueda iniciar sin credenciales de Firebase; la pantalla de login muestra botones para cargar estas credenciales cuando el backend está configurado:
 
 - Miembro: `sebastian.gil@example.com` / `Demo1234!`
 - Administradora: `admin@cospace.co` / `Demo1234!`

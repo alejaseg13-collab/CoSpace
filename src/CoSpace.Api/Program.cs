@@ -7,7 +7,7 @@ using CoSpace.Infrastructure.Firebase;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:10000");
+builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://0.0.0.0:5050");
 builder.Services.AddSingleton<FirestoreContext>();
 builder.Services.AddScoped<DemoDataSeeder>();
 builder.Services.AddSingleton<IBookingRepository, FirebaseBookingRepository>();
@@ -26,7 +26,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 }));
 var app = builder.Build();
 app.UseCors();
-if (builder.Configuration.GetValue("SEED_DEMO_USERS", true))
+if (builder.Configuration.GetValue("SEED_DEMO_USERS", false))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().SeedAsync(CancellationToken.None);

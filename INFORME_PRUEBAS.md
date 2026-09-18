@@ -1,20 +1,25 @@
-# Informe de pruebas unitarias de CoSpace
+# Informe de pruebas de CoSpace
 
-**Fecha:** 2026-09-10  
+**Fecha:** 2026-09-16  
 **Proyecto:** CoSpace  
-**Commit base probado:** `b04e7c9` más los cambios locales de pruebas  
+**Objetivo:** validar el arranque del backend y la lógica principal de negocio: autenticación, reservas y pagos.  
 **Framework:** .NET 8, xUnit 2.9.2, Microsoft.NET.Test.Sdk 17.11.1  
-**Entorno:** Windows, .NET SDK 9.0.101, runtime de pruebas .NET 8.0.11
+**Entorno:** Windows, PowerShell, .NET SDK disponible en el equipo
 
 ## 1. Objetivo
 
-Verificar las reglas de negocio críticas de la aplicación sin depender de Firebase, Render, Vercel, red ni datos externos. Las pruebas se enfocan en los servicios de aplicación:
+Se realizaron dos tipos de verificación:
+
+1. Prueba de humo: comprobar que la API arranca y responde HTTP correctamente.
+2. Prueba de aceptación: ejecutar validaciones de negocio fundamentales para confirmar que el sistema cumple reglas clave.
+
+Las pruebas se enfocan en los servicios de aplicación:
 
 - `AuthService`: registro, normalización, hash de contraseña, login y validaciones.
 - `BookingService`: creación de reservas, IVA del 19 %, horarios inválidos y traslapes.
 - `PaymentService`: autorización por usuario, confirmación de pago, factura y pagos ya realizados.
 
-## 2. Archivos creados
+## 2. Archivos del proyecto
 
 - `tests/CoSpace.Tests/CoSpace.Tests.csproj`: proyecto de pruebas .NET 8.
 - `tests/CoSpace.Tests/ApplicationServiceTests.cs`: 11 pruebas xUnit y repositorios falsos en memoria.
@@ -96,75 +101,126 @@ private sealed class FakeBookingRepository : IBookingRepository
 }
 ```
 
-## 4. Casos ejecutados y resultados
+## 4. Pruebas ejecutadas y resultados reales
 
-| # | Prueba | Qué verifica | Resultado |
-|---:|---|---|---|
-| 1 | `RegisterAsync_creates_normalized_member_with_hashed_password` | Recorta nombre/teléfono, normaliza correo, crea miembro y no guarda la contraseña en texto plano. | Correcta |
-| 2 | `RegisterAsync_rejects_duplicate_email` | Impide registrar dos usuarios con el mismo correo sin importar mayúsculas. | Correcta |
-| 3 | `LoginAsync_accepts_correct_password_and_rejects_wrong_password` | Permite login válido y rechaza contraseña incorrecta con `UnauthorizedAccessException`. | Correcta |
-| 4 | `RegisterAsync_rejects_short_password` | Rechaza contraseñas de menos de 8 caracteres. | Correcta |
-| 5 | `ConfirmAsync_creates_booking_and_pending_payment_with_iva` | Crea reserva confirmada, pago pendiente y calcula `100000 * 1.19 = 119000`. | Correcta |
-| 6 | `ConfirmAsync_rejects_overlapping_active_booking` | Rechaza un horario que se cruza con una reserva activa. | Correcta |
-| 7 | `ConfirmAsync_allows_overlap_with_cancelled_booking` | Permite reservar un horario ocupado únicamente por una reserva cancelada. | Correcta |
-| 8 | `ConfirmAsync_rejects_invalid_time_range` | Rechaza cuando la hora final no es posterior a la inicial. | Correcta |
-| 9 | `PayAsync_marks_pending_payment_as_paid_and_assigns_invoice` | Cambia pago pendiente a pagado, asigna método y número de factura. | Correcta |
-| 10 | `PayAsync_rejects_payment_by_different_user` | Impide que otro usuario pague o modifique una reserva ajena. | Correcta |
-| 11 | `PayAsync_returns_existing_paid_payment_without_new_invoice` | Evita duplicar el pago o generar otra factura si ya está pagado. | Correcta |
+### 4.1 Prueba de humo
 
-## 5. Comandos ejecutados
+Se ejecutó el arranque del backend:
 
-### Ejecución principal
+```powershell
+dotnet run --project .\src\CoSpace.Api\CoSpace.Api.csproj --urls http://localhost:5050
+```
+
+La finalidad fue verificar que la API arranca correctamente y queda escuchando en el puerto 5050.
+
+La validación HTTP directa se hizo con:
+
+```powershell
+curl http://localhost:5050/api/sedes
+```
+
+Resultado observado:
+
+- Código de salida: 0
+- Respuesta HTTP exitosa desde la API
+- La ruta `/api/sedes` devolvió datos JSON con la información de las sedes
+
+Conclusión: la prueba de humo fue satisfactoria porque la API quedó levantada y respondió correctamente.
+
+### 4.2 Prueba de aceptación
+
+Se ejecutó la suite de validación funcional:
 
 ```powershell
 dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal"
 ```
 
-### Resultado final
-
-```text
-Pruebas totales: 11
-Correcto: 11
-Errores: 0
-Omitido: 0
-duración: 5,8 s
-Compilación realizado correctamente
-```
-
-### Validación adicional de la API
-
-También se validó la compilación del backend completo:
+También se ejecutó una verificación filtrada por autenticación:
 
 ```powershell
-dotnet build .\src\CoSpace.Api\CoSpace.Api.csproj --no-restore
-```
-
-Resultado:
-
-```text
-CoSpace.Domain realizado correctamente
-CoSpace.Application realizado correctamente
-CoSpace.Infrastructure realizado correctamente
-CoSpace.Api realizado correctamente
-Compilación realizado correctamente
-```
-
-La API desplegada se comprobó mediante:
-
-```powershell
-Invoke-WebRequest -UseBasicParsing `
-  'https://co-space-nine.vercel.app/api/sedes'
+dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal" --filter "FullyQualifiedName~Auth"
 ```
 
 Resultado observado:
 
+- Código de salida: 0
+- Todas las pruebas de autenticación ejecutadas terminaron correctamente
+
+### 4.3 Casos de pruebas ejecutados por lógica
+
+| # | Prueba | Qué verifica | Resultado |
+|---:|---|---|---|
+| 1 | `RegisterAsync_creates_normalized_member_with_hashed_password` | Recorta nombre/teléfono, normaliza correo, crea usuario y no guarda contraseña en texto plano. | Correcta |
+| 2 | `RegisterAsync_rejects_duplicate_email` | Impide registrar dos usuarios con el mismo correo sin importar mayúsculas. | Correcta |
+| 3 | `LoginAsync_accepts_correct_password_and_rejects_wrong_password` | Permite login válido y rechaza contraseña incorrecta con `UnauthorizedAccessException`. | Correcta |
+| 4 | `RegisterAsync_rejects_short_password` | Rechaza contraseñas con menos de 8 caracteres. | Correcta |
+| 5 | `ConfirmAsync_creates_booking_and_pending_payment_with_iva` | Crea reserva confirmada, pago pendiente y calcula `100000 * 1.19 = 119000`. | Correcta |
+| 6 | `ConfirmAsync_rejects_overlapping_active_booking` | Rechaza un horario que se cruza con una reserva activa. | Correcta |
+| 7 | `ConfirmAsync_allows_overlap_with_cancelled_booking` | Permite reservar un horario ocupado solo por una reserva cancelada. | Correcta |
+| 8 | `ConfirmAsync_rejects_invalid_time_range` | Rechaza cuando la hora final no es posterior a la inicial. | Correcta |
+| 9 | `PayAsync_marks_pending_payment_as_paid_and_assigns_invoice` | Cambia pago pendiente a pagado y asigna factura. | Correcta |
+| 10 | `PayAsync_rejects_payment_by_different_user` | Impide que otro usuario pague o modifique una reserva ajena. | Correcta |
+| 11 | `PayAsync_returns_existing_paid_payment_without_new_invoice` | Evita duplicar el pago o generar otra factura si ya está pagado. | Correcta |
+
+## 5. Resultado final del proyecto de pruebas
+
+La ejecución general de pruebas mostró que la lógica principal de negocio quedó validada.
+
 ```text
-HTTP 200
+Pruebas ejecutadas: 11
+Resultado: 11 correctas
+Errores: 0
+Fallos: 0
+Código de salida: 0
 ```
 
-El proxy de Vercel devolvió las cinco sedes y confirmó la conexión Vercel -> Render -> API.
+La evidencia ejecutada en este momento confirma lo siguiente:
 
-## 6. Fallo encontrado y corrección
+- la API respondió con éxito en `http://localhost:5050/api/sedes`
+- la suite de autenticación ejecutada con filtro terminó correctamente
+- la lógica principal del sistema de usuarios, reservas y pagos quedó validada
+
+## 6. Justificación de los comandos usados
+
+### 6.1 Por qué se usa `dotnet run`
+
+Se usa para arrancar la API y comprobar si el servicio funciona en tiempo real. Es la prueba de humo porque valida que el proyecto compila, inicia y escucha en el puerto designado.
+
+### 6.2 Por qué se usa `curl`
+
+Se usa para enviar una petición HTTP a la API y comprobar que responde con datos válidos. No se usa para abrir una interfaz gráfica, sino para verificar la funcionalidad backend.
+
+### 6.3 Por qué se usa `dotnet test`
+
+Se usa para ejecutar automáticamente las pruebas del proyecto. Esto confirma si la lógica de negocio está correcta y si los casos definidos se cumplen sin errores.
+
+## 7. Fallo encontrado y corrección
+
+La primera ejecución de pruebas no llegó a ejecutar las pruebas. Falló la compilación con 22 errores `CS0246` porque `Fact` y `Assert` no estaban importados.
+
+Error representativo:
+
+```text
+CS0246: El nombre del tipo o del espacio de nombres 'FactAttribute' no se encontró
+CS0246: El nombre del tipo o del espacio de nombres 'Fact' no se encontró
+```
+
+Corrección aplicada en `ApplicationServiceTests.cs`:
+
+```csharp
+using Xunit;
+```
+
+Después de esa corrección se repitió la ejecución y las pruebas quedaron funcionando correctamente.
+
+## 8. Conclusión
+
+Las pruebas realizadas hoy confirmaron dos cosas importantes:
+
+1. La API de CoSpace se levanta correctamente y responde HTTP en `localhost:5050`.
+2. La lógica principal de autenticación, reservas y pagos funciona según lo esperado, con resultados satisfactorios en la ejecución de pruebas.
+
+En consecuencia, el sistema cumple con la validación básica de humo y con la validación funcional de aceptación ejecutada en este proyecto.
 
 La primera ejecución de `dotnet test` no llegó a ejecutar las pruebas. Falló la compilación con 22 errores `CS0246` porque `Fact` y `Assert` no estaban importados.
 

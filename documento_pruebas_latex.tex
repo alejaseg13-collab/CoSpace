@@ -1,0 +1,331 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,left=2.7cm,right=2.7cm,top=2.7cm,bottom=2.7cm]{geometry}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{helvet}
+\usepackage{caption}
+\renewcommand{\familydefault}{\sfdefault}
+\setlength{\headheight}{14pt}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{0pt}
+\captionsetup[table]{font=small,labelfont=bf,justification=centering}
+\setlist[itemize]{leftmargin=1.5em,itemsep=0.4em,topsep=0.35em}
+\renewcommand{\contentsname}{Contenido}
+\renewcommand{\tablename}{Cuadro}
+
+\definecolor{teal}{HTML}{0E7C86}
+\definecolor{tealDark}{HTML}{0B4F59}
+\definecolor{mint}{HTML}{EAF7F4}
+\definecolor{soft}{HTML}{F6F9F9}
+\definecolor{ink}{HTML}{1E2A2D}
+\definecolor{muted}{HTML}{5C6970}
+\definecolor{success}{HTML}{1F8F5F}
+\definecolor{line}{HTML}{D9E5E8}
+\definecolor{warning}{HTML}{D9892B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=tealDark,
+    urlcolor=tealDark,
+    citecolor=tealDark
+}
+
+\colorlet{chaptertitle}{tealDark}
+
+\lstdefinestyle{bashstyle}{
+    backgroundcolor=\color{soft},
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{muted},
+    keywordstyle=\color{tealDark},
+    stringstyle=\color{success},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{line},
+    xleftmargin=0.5em,
+    framexleftmargin=0.5em,
+    aboveskip=0.8em,
+    belowskip=0.8em
+}
+\lstset{style=bashstyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{tealDark}{\small CoSpace}}
+\fancyhead[R]{\textcolor{muted}{\small Informe de pruebas}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+\fill[teal!10] (current page.north west) rectangle ([yshift=-7cm]current page.north east);
+\fill[teal] ([yshift=-0.6cm]current page.north west) rectangle ([yshift=-2.4cm]current page.north east);
+\end{tikzpicture}
+
+\vspace*{2cm}
+\begin{center}
+{\color{tealDark}\fontsize{30}{34}\selectfont \textbf{CoSpace}}\par
+\vspace{0.7cm}
+{\color{teal}\fontsize{24}{30}\selectfont \textbf{Informe de pruebas}}\par
+\vspace{1.2cm}
+{\color{ink}\Large Validación del backend y lógica de negocio}\par
+\vspace{1.5cm}
+\begin{tabular}{>{\centering\arraybackslash}p{8cm}}
+\rowcolor{mint}
+\textbf{Proyecto: CoSpace} \\
+\textbf{Tipo: humo + aceptación} \\
+\textbf{Fecha: \today} \\
+\textbf{Entorno: Windows / .NET 8 / xUnit}
+\end{tabular}
+\end{center}
+\vfill
+\begin{center}
+\colorbox{teal!10}{\parbox{0.75\textwidth}{\centering\vspace{0.7em}\textcolor{tealDark}{\large Documentación técnica de validación funcional del sistema}\vspace{0.7em}}}
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\thispagestyle{empty}
+
+\chapter{Introducción}
+
+\noindent La validación del sistema se realizó en dos niveles complementarios:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item \textbf{Prueba de humo:} verifica que el backend arranca correctamente y responde a peticiones HTTP sin errores.
+    \item \textbf{Prueba de aceptación:} valida las reglas de negocio principales de autenticación, reservas y pagos.
+\end{itemize}
+
+En este proyecto, la API no se presenta como una interfaz visual en el navegador, sino como un servicio que recibe y devuelve respuestas HTTP. Por esta razón, la verificación se hizo principalmente desde la terminal, donde se ejecutaron los comandos de arranque, consulta y prueba automática.
+
+\chapter{Objetivo}
+
+\noindent El objetivo principal fue comprobar que:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item La API puede levantarse sin errores.
+    \item La ruta principal responde correctamente.
+    \item La lógica de negocio de registro, autenticación, reservas y pagos funciona como se espera.
+    \item El sistema cumple con las reglas críticas definidas para la capa de aplicación.
+\end{itemize}
+
+\chapter{Entorno y herramientas}
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item \textbf{Sistema operativo:} Windows
+    \item \textbf{Framework:} .NET 8
+    \item \textbf{Herramienta de pruebas:} xUnit
+    \item \textbf{Entorno de ejecución:} PowerShell
+    \item \textbf{Proyecto de pruebas:} \texttt{tests/CoSpace.Tests/CoSpace.Tests.csproj}
+\end{itemize}
+
+\chapter{Metodología de pruebas unitarias}
+
+\noindent La validación de la lógica de negocio se realizó con pruebas unitarias aisladas, sin depender de servicios externos ni datos reales. El objetivo principal fue verificar que cada servicio cumpliera sus reglas sin requerir Firestore, Render ni Vercel.
+
+\section{Diseño de la prueba}
+
+Cada caso de prueba se construyó sobre servicios reales de aplicación, pero con repositorios falsos en memoria. Esto permitió probar la lógica sin alterar datos reales ni depender del entorno externo.
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item \textbf{AuthService:} valida registro, login, normalización de campos y reglas de validación.
+    \item \textbf{BookingService:} valida reservas, IVA, traslapes y rangos temporales inválidos.
+    \item \textbf{PaymentService:} valida pagos, autorizaciones, facturas y prevención de duplicados.
+\end{itemize}
+
+\section{Repositorios falsos usados}
+
+Se emplearon implementaciones simuladas de persistencia para aislar la lógica de negocio:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item \texttt{FakeUserRepository}
+    \item \texttt{FakeBookingRepository}
+    \item \texttt{FakePaymentRepository}
+\end{itemize}
+
+Esto hace que las pruebas sean deterministas, rápidas y reproducibles, además de evitar efectos secundarios sobre la base de datos real.
+
+\section{Criterios de aceptación}
+
+Una prueba se considera exitosa cuando:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item el servicio recibe los datos esperados,
+    \item la salida cumple con la regla de negocio,
+    \item la operación genera el efecto esperado,
+    \item y se rechazan los casos inválidos con la excepción o error indicado.
+\end{itemize}
+
+\section{Comandos relevantes}
+
+\begin{lstlisting}[language=bash]
+# Arranque de la API
+ dotnet run --project .\src\CoSpace.Api\CoSpace.Api.csproj --urls http://localhost:5050
+
+# Verificacion de respuesta HTTP
+ curl http://localhost:5050/api/sedes
+
+# Ejecucion de pruebas de autenticacion
+ dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal" --filter "FullyQualifiedName~Auth"
+\end{lstlisting}
+
+\chapter{Prueba de humo}
+
+\section{Definición}
+\noindent La prueba de humo busca confirmar que el sistema inicia correctamente y responde a peticiones básicas sin errores de configuración, compilación o arranque. Es una validación rápida y esencial antes de ejecutar pruebas funcionales más profundas.
+
+\section{Comando ejecutado}
+
+\begin{lstlisting}[language=bash]
+curl http://localhost:5050/api/sedes
+\end{lstlisting}
+
+\section{Resultado esperado}
+Se espera una respuesta HTTP exitosa con un cuerpo JSON que contenga la información de las sedes disponibles.
+
+\section{Resultado obtenido}
+La ejecución tuvo código de salida 0, indicando que la API respondió correctamente y que el backend quedó operativo en el puerto 5050.
+
+\chapter{Pruebas de aceptación}
+
+\noindent La prueba de aceptación valida que la lógica principal del sistema cumple con las reglas del negocio. En este caso, se centró en tres áreas clave:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item Autenticación
+    \item Reservas
+    \item Pagos
+\end{itemize}
+
+\section{Comando general}
+
+\begin{lstlisting}[language=bash]
+ dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+\end{lstlisting}
+
+\section{Casos ejecutados}
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{0.92\textwidth}{|>{\centering\arraybackslash}p{0.7cm}|>{\RaggedRight\arraybackslash}p{5.0cm}|>{\RaggedRight\arraybackslash}X|}
+\hline
+\rowcolor{mint}
+\textbf{N°} & \textbf{Caso de prueba} & \textbf{Validación} \\ \hline
+1 & \path{RegisterAsync_creates_normalized_member_with_hashed_password} & Normaliza nombre, correo y teléfono; crea el usuario y no almacena la contraseña en texto plano. \\ \hline
+2 & \path{RegisterAsync_rejects_duplicate_email} & Rechaza correos repetidos sin importar mayúsculas o minúsculas. \\ \hline
+3 & \path{LoginAsync_accepts_correct_password_and_rejects_wrong_password} & Acepta el login correcto y rechaza una contraseña incorrecta. \\ \hline
+4 & \path{RegisterAsync_rejects_short_password} & Exige una contraseña mínima de 8 caracteres. \\ \hline
+5 & \path{ConfirmAsync_creates_booking_and_pending_payment_with_iva} & Genera la reserva y el pago pendiente; calcula correctamente el IVA sobre el subtotal. \\ \hline
+6 & \path{ConfirmAsync_rejects_overlapping_active_booking} & Rechaza horarios que se cruzan con una reserva activa. \\ \hline
+7 & \path{ConfirmAsync_allows_overlap_with_cancelled_booking} & Permite la reserva si la reserva previa está cancelada. \\ \hline
+8 & \path{ConfirmAsync_rejects_invalid_time_range} & Rechaza un rango horario inválido cuando la hora final no es posterior a la inicial. \\ \hline
+9 & \path{PayAsync_marks_pending_payment_as_paid_and_assigns_invoice} & Actualiza un pago pendiente a pagado y le asigna la factura. \\ \hline
+10 & \path{PayAsync_rejects_payment_by_different_user} & Impide que un usuario distinto pague una reserva ajena. \\ \hline
+11 & \path{PayAsync_returns_existing_paid_payment_without_new_invoice} & Evita duplicidad de pagos y facturas repetidas. \\ \hline
+\end{tabularx}
+\caption{Casos de prueba principales ejecutados durante la validación de aceptación.}
+\end{table}
+
+\section{Prueba filtrada en autenticación}
+
+\noindent Se ejecutó además una validación específica para la parte de autenticación:
+
+\begin{lstlisting}[language=bash]
+ dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal" --filter "FullyQualifiedName~Auth"
+\end{lstlisting}
+
+\section{Resultado esperado}
+Se esperaba que todas las pruebas del conjunto de autenticación se ejecutaran correctamente y regresaran una salida exitosa sin fallos.
+
+\section{Resultado obtenido}
+La ejecución regresó con código de salida 0, lo que confirma que el conjunto de autenticación quedó validado correctamente.
+
+\chapter{Resultados observados}
+
+\section{Resumen ejecutivo}
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item La prueba de humo fue exitosa: la API respondió correctamente desde \texttt{http://localhost:5050/api/sedes}.
+    \item La validación de autenticación tuvo resultado exitoso con salida 0.
+    \item La suite de aceptación ejecutó 11 casos funcionales y no presentó fallos.
+\end{itemize}
+
+\section{Interpretación}
+\noindent La prueba de humo demostró que la API no solo compiló, sino que además respondió a una petición HTTP real del sistema. La prueba de aceptación, por su parte, validó reglas de negocio esenciales que impactan directamente la experiencia del usuario final: creación de cuentas, acceso, reservas y pagos.
+
+\section{Cobertura por módulo}
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{2.5cm}|}
+\hline
+\rowcolor{mint}
+\textbf{Módulo} & \textbf{Reglas validadas} & \textbf{Resultado} \\ \hline
+Autenticación & registro, correo duplicado, login correcto y fallido, contraseña corta & Exitosa \\ \hline
+Reservas & cálculo de IVA, validación de horario, traslape activo, reserva cancelada & Exitosa \\ \hline
+Pagos & pago pendiente, pago duplicado, pago por usuario incorrecto, factura asociada & Exitosa \\ \hline
+\end{tabularx}
+\caption{Cobertura funcional por módulo de la lógica de negocio.}
+\end{table}
+
+\section{Evidencia de ejecución}
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item Comando ejecutado: \texttt{dotnet test .\textbackslash tests\textbackslash CoSpace.Tests\textbackslash CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal"}
+    \item Resultado: salida exitosa con código 0.
+    \item Validación de humo: \texttt{curl http://localhost:5050/api/sedes}
+    \item Resultado: respuesta HTTP 200 con datos de sedes.
+\end{itemize}
+
+\section{Limitaciones conocidas}
+
+\noindent Las pruebas realizadas corresponden a validación unitaria y funcional de la lógica de negocio. No sustituyen una ejecución completa en un entorno con Firebase real ni pruebas end-to-end con navegador. En particular, no se validaron:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.4em]
+    \item persistencia real en Firestore,
+    \item conexión real a Render o Vercel,
+    \item pasarela de pagos real,
+    \item pruebas de carga o concurrencia simultánea,
+    \item interacción visual completa con navegador.
+\end{itemize}
+
+\chapter{Conclusión}
+
+La ejecución realizada confirma que el sistema cuenta con una validación funcional básica sólida para la etapa actual del proyecto. El backend respondió exitosamente en la prueba de humo y la lógica de autenticación, reservas y pagos se comportó de acuerdo con las reglas esperadas. La suite ejecutada cubre los principales escenarios de negocio del sistema y mostró resultados satisfactorios.
+
+\chapter{Anexo: comandos principales}
+
+\begin{lstlisting}[language=bash]
+# Prueba de humo
+curl http://localhost:5050/api/sedes
+
+# Prueba de aceptacion
+ dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+
+# Prueba de autenticacion filtrada
+ dotnet test .\tests\CoSpace.Tests\CoSpace.Tests.csproj --configuration Release --logger "console;verbosity=normal" --filter "FullyQualifiedName~Auth"
+\end{lstlisting}
+
+\end{document}
